@@ -1,13 +1,13 @@
 #include <array>
-// array
+// std::array
 #include <cstddef>
-// size_t
+// std::size_t
 #include <initializer_list>
 // {...}
 #include <iostream>
-// clog
+// std::clog
 #include <iterator>
-// size
+// std::size
 
 #include "gtest/gtest.h"
 // testing::InitGoogleTest
@@ -21,21 +21,19 @@
 #include "MinhaListaEncadeada.h"
 // MinhaListaEncadeada
 
-using clog;
-using size;
+using std::clog;
+using std::size;
 
 using testing::InitGoogleTest;
 
-using namespace std;
-
 template class MinhaListaEncadeada<int>;
-template class MinhaListaEncadeada<string>;
+template class MinhaListaEncadeada<std::string>;
 
 template<typename T>
 struct Esperado
 {
     T dado;
-    size_t posicao;
+    std::size_t posicao;
 };
 
 TEST(TesteListaEncadeada, Inicializacao)
@@ -54,11 +52,9 @@ TEST(TesteListaEncadeada, InsercaoNoInicio)
 {
     using T = int;
 
-    ListaEncadeadaAbstrata<T>* const lista {
-        new MinhaListaEncadeada<T>
-    };
+    ListaEncadeadaAbstrata<T>* const lista{new MinhaListaEncadeada<T>};
 
-    array<Esperado<T>, 5> const esperados
+    std::array<Esperado<T>, 5> const esperados
     {{
         {0,     4},
         {10,    3},
@@ -94,7 +90,7 @@ TEST(TesteListaEncadeada, Insercao)
 
         T const dado{0};
 
-        for (size_t const posicao: {1, 2, 100})
+        for (std::size_t const posicao: {1, 2, 100})
             ASSERT_THROW(lista->inserir(posicao, dado), ExcecaoPosicaoInvalida);
         
         ASSERT_EQ(lista->tamanho(), 0);
@@ -109,7 +105,7 @@ TEST(TesteListaEncadeada, Insercao)
     {
         lista = new MinhaListaEncadeada<T>;
 
-        array<Esperado<T>, 6> const esperados
+        std::array<Esperado<T>, 6> const esperados
         {{
             {0,     0},
             {10,    1},
@@ -119,7 +115,7 @@ TEST(TesteListaEncadeada, Insercao)
             {10,    1}
         }};
 
-        for (size_t i{0}; i < size(esperados); ++i)
+        for (std::size_t i{0}; i < size(esperados); ++i)
             lista->inserir(i, esperados[i].dado);
         
         ASSERT_THROW(lista->posicao(50), ExcecaoDadoInexistente);
@@ -146,7 +142,7 @@ TEST(TesteListaEncadeada, Insercao)
     {
         lista = new MinhaListaEncadeada<T>;
 
-        array<Esperado<T>, 5> const dados
+        std::array<Esperado<T>, 5> const dados
         {{
             {0,     0},
             {10,    1},
@@ -158,7 +154,7 @@ TEST(TesteListaEncadeada, Insercao)
         for (Esperado<T> const& dado: dados)
             lista->inserir(dado.posicao, dado.dado);
         
-        array<Esperado<T>, 2> const esperados
+        std::array<Esperado<T>, 2> const esperados
         {{
             {50,    0},
             {60,    3}
@@ -185,7 +181,7 @@ TEST(TesteListaEncadeada, InsercaoNoFim)
 
     ListaEncadeadaAbstrata<T>* lista{new MinhaListaEncadeada<T>};
 
-    array<Esperado<T>, 5> const esperados
+    std::array<Esperado<T>, 5> const esperados
     {{
         {0,     0},
         {10,    1},
@@ -226,24 +222,24 @@ TEST(TesteListaEncadeada, RemocaoDoInicio)
     {
         lista = new MinhaListaEncadeada<T>;
 
-        array<T, 5> const dados{0, 10, 20, 30, 40};
+        std::array<T, 5> const dados{0, 10, 20, 30, 40};
 
         for (T const dado: dados)
             lista->inserirNoFim(dado);
         
-        constexpr size_t quantidadeRemover{2};
+        constexpr std::size_t quantidadeRemover{2};
         
-        for (size_t i{0}; i < quantidadeRemover; ++i)
+        for (std::size_t i{0}; i < quantidadeRemover; ++i)
         {
             ASSERT_EQ(lista->removerDoInicio(), dados[i]);
             ASSERT_EQ(lista->tamanho(), size(dados) - i - 1);
             ASSERT_TRUE(!lista->contem(dados[i]));
         }
 
-        for (size_t i{quantidadeRemover}; i < size(dados); ++i)
+        for (std::size_t i{quantidadeRemover}; i < size(dados); ++i)
             ASSERT_EQ(lista->posicao(dados[i]), i - quantidadeRemover);
         
-        for (size_t i{quantidadeRemover}; i < size(dados); ++i)
+        for (std::size_t i{quantidadeRemover}; i < size(dados); ++i)
             ASSERT_EQ(lista->removerDoInicio(), dados[i]);
         
         ASSERT_TRUE(lista->vazia());
@@ -258,19 +254,19 @@ TEST(TesteListaEncadeada, RemocaoDePosicao)
 
     ListaEncadeadaAbstrata<T>* lista{new MinhaListaEncadeada<T>};
 
-    array<T, 5> const dados{0, 10, 20, 30, 40};
+    std::array<T, 5> const dados{0, 10, 20, 30, 40};
 
     for (T const dado: dados)
         lista->inserirNoFim(dado);
 
-    array<Esperado<T>, 3> const esperados
+    std::array<Esperado<T>, 3> const esperados
     {{
         {dados[0],  0},  // Do início.
         {dados[3],  2},  // Do meio.
         {dados[4],  2}   // Do fim.
     }};
 
-    size_t tamanho{size(dados)};
+    std::size_t tamanho{size(dados)};
     
     for (Esperado<T> const& esperado: esperados)
     {
@@ -281,13 +277,13 @@ TEST(TesteListaEncadeada, RemocaoDePosicao)
         ASSERT_TRUE(!lista->contem(esperado.dado));
     }
 
-    for (size_t const posicao: {2, 3, 100})
+    for (std::size_t const posicao: {2, 3, 100})
         ASSERT_THROW(lista->removerDe(posicao), ExcecaoPosicaoInvalida);
 
-    for (size_t i{0}; i < tamanho; ++i)
+    for (std::size_t i{0}; i < tamanho; ++i)
         [[maybe_unused]] T const dado{lista->removerDoInicio()};
     
-    for (size_t const posicao: {0, 1})
+    for (std::size_t const posicao: {0, 1})
         ASSERT_THROW(lista->removerDe(posicao), ExcecaoPosicaoInvalida);
     
     ASSERT_TRUE(lista->vazia());
@@ -312,23 +308,23 @@ TEST(TesteListaEncadeada, RemocaoDoFim)
     {
         lista = new MinhaListaEncadeada<T>;
 
-        array<T, 5> const dados{0, 10, 20, 30, 40};
+        std::array<T, 5> const dados{0, 10, 20, 30, 40};
 
         for (T const dado: dados)
             lista->inserirNoFim(dado);
         
-        constexpr size_t quantidadeRemover{2};
+        constexpr std::size_t quantidadeRemover{2};
         
-        for (size_t i{0}; i < quantidadeRemover; ++i)
+        for (std::size_t i{0}; i < quantidadeRemover; ++i)
         {
-            size_t const j{size(dados) - i - 1};
+            std::size_t const j{size(dados) - i - 1};
 
             ASSERT_EQ(lista->removerDoFim(), dados[j]);
             ASSERT_EQ(lista->tamanho(), j);
             ASSERT_TRUE(!lista->contem(dados[j]));
         }
         
-        for (size_t i{quantidadeRemover}; i < size(dados); ++i)
+        for (std::size_t i{quantidadeRemover}; i < size(dados); ++i)
             ASSERT_EQ(lista->removerDoFim(), dados[size(dados) - i - 1]);
         
         ASSERT_TRUE(lista->vazia());
@@ -351,7 +347,7 @@ TEST(TesteListaEncadeada, Remocao)
     for (T const dado: {1, 11, 21, 31, 41})
         ASSERT_THROW(lista->remover(dado), ExcecaoDadoInexistente);
 
-    size_t tamanho{lista->tamanho()};
+    std::size_t tamanho{lista->tamanho()};
     
     for (T const dado: {0, 40, 20, 30})
     {
