@@ -56,7 +56,7 @@ MinhaListaEncadeada<T>::~MinhaListaEncadeada() {
 
     while (elemento != nullptr) {
         /* code */
-        Elemento<T> const* const proximo(elemento->proximo);
+        Elemento<T> *const proximo(elemento->proximo);
         delete elemento;
         elemento = proximo;
     }
@@ -80,7 +80,7 @@ size_t MinhaListaEncadeada<T>::tamanho() const {
  */
 template<typename T>
 bool MinhaListaEncadeada<T>::vazia() const {
-    return (this->_tamanho == 0);
+    return (tamanho() == 0);
 }
 
 
@@ -94,8 +94,23 @@ bool MinhaListaEncadeada<T>::vazia() const {
  * item na lista, a posição da primeira ocorrência.
  */
 template <typename T>
-size_t posicao(T dado)  {
-    return 0;
+size_t MinhaListaEncadeada<T>::posicao(T const dado) const {
+    
+    if(vazia()) {
+        throw ExcecaoListaEncadeadaVazia{};
+    }
+    
+    size_t i = 0;
+
+    for(Elemento<T> const *elemento(this->_primeiro); elemento != nullptr; ++i) {
+        if(elemento->dado == dado) {
+            return i;
+        }
+        elemento = elemento->proximo;
+    }
+
+    throw ExcecaoDadoInexistente{};
+
 }
 
 
@@ -106,8 +121,17 @@ size_t posicao(T dado)  {
  * @return true se o item está contido na lista; false caso contrário.
  */
 template<typename T>
-bool contem(T dado)  {
-    return false;
+bool MinhaListaEncadeada<T>::contem(T dado) const {
+    try {
+        /* code */
+        return posicao(dado) < tamanho();
+    }
+    catch(ExcecaoDadoInexistente const&) {
+        return false;
+    } catch(ExcecaoListaEncadeadaVazia const&) {
+        return false;
+    }
+    
 }
 
 
@@ -117,8 +141,11 @@ bool contem(T dado)  {
  * @param dado O item sendo inserido.
  */
 template<typename T>
-void inserirNoInicio(T dado) {
-    
+void MinhaListaEncadeada<T>::inserirNoInicio(T dado) {
+    Elemento<T> *const novo = new Elemento<T>(dado, this->_primeiro); 
+
+    this->_primeiro = novo;
+    this->_tamanho = this->_tamanho + 1;
 }
 
 
@@ -134,8 +161,29 @@ void inserirNoInicio(T dado) {
  * @param dado O item sendo inserido.
  */
 template<typename T>
-void inserir(size_t posicao, T dado) {
+void MinhaListaEncadeada<T>::inserir(size_t posicao, T dado) {
+    Elemento<T> *elemento(this->_primeiro);
+    // Elemento<T> *novo = new Elemento<T>(dado, nullptr);// -> Memory Leak
     
+    size_t i = 0;
+
+    if(tamanho() < posicao || posicao < (0)) {
+        throw ExcecaoPosicaoInvalida{};
+    } else if(posicao == 0) {
+        inserirNoInicio(dado);
+    } else {
+        while (i < posicao-1) {
+            /* code */
+            elemento = elemento->proximo;
+            i++;
+        }
+        if(elemento != nullptr) {
+            Elemento<T> *novo = new Elemento<T>(dado, nullptr); // -> Memory Leak 2
+            novo->proximo = elemento->proximo;
+            elemento->proximo = novo;
+            this->_tamanho = this->_tamanho + 1;   
+        }
+    }
 }
 
 
@@ -145,8 +193,24 @@ void inserir(size_t posicao, T dado) {
  * @param dado O item sendo inserido.
  */
 template<typename T>
-void inserirNoFim(T dado) {
+void MinhaListaEncadeada<T>::inserirNoFim(T dado) {
+    Elemento<T> *elemento(this->_primeiro);
+    // Elemento<T> *const novo = new Elemento<T>(dado, nullptr); //-> Memory leak
     
+    size_t i = 1;
+    
+    if(vazia()) {
+        inserirNoInicio(dado);
+    } else {
+        while (elemento->proximo != nullptr) {
+            /* code */
+            elemento = elemento->proximo;
+            i++;
+        }
+        // elemento->proximo = novo;
+        // this->_tamanho = this->_tamanho + 1;
+        inserir(i, dado);
+    }
 }
 
 
@@ -157,8 +221,19 @@ void inserirNoFim(T dado) {
  * @return O item removido.
  */
 template<typename T>
-T removerDoInicio() {
-    return 0;
+T MinhaListaEncadeada<T>::removerDoInicio() {
+    Elemento<T> *elemento(this->_primeiro);
+
+    if(vazia()) {
+        throw ExcecaoListaEncadeadaVazia{};
+    }
+    T dado = elemento->dado;
+
+    this->_primeiro = elemento->proximo;
+    delete elemento;
+    this->_tamanho = this->_tamanho - 1;
+
+    return dado;
 }
 
 
@@ -170,8 +245,38 @@ T removerDoInicio() {
  * @return O item removido.
  */
 template<typename T>
-T removerDe(size_t posicao) {
-    return 0;
+T MinhaListaEncadeada<T>::removerDe(size_t posicao) {
+
+    Elemento<T> *elemento(this->_primeiro);
+    Elemento<T> *elementoAnterior(this->_primeiro);
+
+    size_t i = 0;
+    T dado = 0;
+
+    if(this->_tamanho <= posicao || posicao < (0)) {
+        throw ExcecaoPosicaoInvalida{};
+    } else if(posicao == 0) {
+        dado = removerDoInicio();
+        return dado;
+    } else if(posicao == this->_tamanho) {
+        dado = removerDoFim();
+        return dado;
+    }
+
+    while (i < posicao-1) {
+        /* loop */
+        elementoAnterior = elementoAnterior->proximo;
+        i++;
+    }
+
+    if(elementoAnterior->proximo != nullptr) {
+        elemento = elementoAnterior->proximo;
+        elementoAnterior->proximo = elementoAnterior->proximo->proximo;
+        dado = elemento->dado;
+        delete elemento;
+        this->_tamanho = this->_tamanho - 1;
+    }
+    return dado;
 }
 
 
@@ -182,8 +287,14 @@ T removerDe(size_t posicao) {
  * @return O item removido.
  */
 template<typename T>
-T removerDoFim() {
-    return 0;
+T MinhaListaEncadeada<T>::removerDoFim() {
+    if(vazia()) {
+        throw ExcecaoListaEncadeadaVazia{};
+    } else if(tamanho() == 1) {
+        return removerDoInicio();
+    } else {
+        return removerDe(tamanho()-1);
+    }
 }
 
 
@@ -196,7 +307,20 @@ T removerDoFim() {
  * o mesmo valor, remove a primeira ocorrência.
  */
 template<typename T>
-void remover(T dado) {
-    
+void MinhaListaEncadeada<T>::remover(T dado) {
+
+    if(vazia()) {
+        throw ExcecaoListaEncadeadaVazia{};
+    } else if(contem(dado)) {
+        if(posicao(dado) == 0) {
+            removerDoInicio();
+        } else if(posicao(dado) == this->_tamanho) {
+            removerDoFim();
+        } else {
+            removerDe(posicao(dado));
+        }
+    } else {
+        throw ExcecaoDadoInexistente{};
+    }
 }
 #endif
